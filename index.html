@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeLens — See Your Resume Through a Recruiter's Eyes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1b2430;
+    --amber: #e8a33d;
+    --paper: #faf7f2;
+    --paper-alt: #f1ece3;
+    --slate: #6b7280;
+    --line: #dcd5c8;
+    --good: #2f9e6e;
+    --bad: #c0392b;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 90px;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+
+  header { text-align: center; margin-bottom: 40px; }
+  header .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid var(--ink);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  header .mark::after {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--amber);
+  }
+  header h1 {
+    font-family: 'Newsreader', serif;
+    font-weight: 600; font-size: 2.3rem; margin: 0 0 8px; letter-spacing: -0.01em;
+  }
+  header p { color: var(--slate); margin: 0; font-size: 1rem; max-width: 460px; margin: 0 auto; }
+
+  .panes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 640px) { .panes { grid-template-columns: 1fr; } }
+
+  .pane label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--slate);
+    margin-bottom: 8px;
+  }
+  .pane textarea {
+    width: 100%;
+    height: 220px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+  }
+  .pane textarea:focus { border-color: var(--ink); }
+
+  .actions { display: flex; justify-content: center; margin: 8px 0 36px; }
+  button.analyze {
+    padding: 14px 30px;
+    border-radius: 999px;
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  button.analyze:hover { transform: translateY(-1px); background: #2a3547; }
+  button.analyze:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  .status { text-align: center; color: var(--slate); font-size: 0.9rem; min-height: 20px; margin-bottom: 10px; }
+  .status.error { color: var(--bad); }
+
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px;
+    margin-bottom: 22px;
+  }
+  .aperture {
+    flex: 0 0 auto;
+    width: 108px; height: 108px;
+    position: relative;
+  }
+  .aperture svg { width: 100%; height: 100%; }
+  .aperture .num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600; font-size: 1.5rem;
+  }
+  .score-copy .summary-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--slate); margin-bottom: 6px;
+  }
+  .score-copy .summary-text {
+    font-family: 'Newsreader', serif;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+
+  .keyword-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+  @media (max-width: 640px) { .keyword-row { grid-template-columns: 1fr; } }
+  .kw-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+  }
+  .kw-card h3 {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.07em; margin: 0 0 12px; color: var(--slate);
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 0.8rem; padding: 5px 10px; border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+  }
+  .chip.matched { background: rgba(47,158,110,0.12); color: var(--good); }
+  .chip.missing { background: rgba(192,57,43,0.1); color: var(--bad); }
+
+  .list-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .list-card h3 {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.07em; margin: 0 0 12px; color: var(--slate);
+  }
+  .list-card ul { margin: 0; padding-left: 18px; }
+  .list-card li { margin-bottom: 8px; line-height: 1.5; font-size: 0.92rem; }
+  .list-card li:last-child { margin-bottom: 0; }
+
+  footer { margin-top: 44px; text-align: center; color: var(--slate); font-size: 0.78rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark"></div>
+    <h1>ResumeLens</h1>
+    <p>Paste your resume and a job description. See exactly how a recruiter's screening tools will read the match.</p>
+  </header>
+
+  <div class="panes">
+    <div class="pane">
+      <label for="resumeBox">Your resume</label>
+      <textarea id="resumeBox" placeholder="Paste your resume text here..."></textarea>
+    </div>
+    <div class="pane">
+      <label for="jobBox">Job description</label>
+      <textarea id="jobBox" placeholder="Paste the job description here..."></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="analyze" id="analyzeBtn">Analyze Match</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="results" id="results">
+    <div class="score-row">
+      <div class="aperture" id="aperture">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#dcd5c8" stroke-width="8"/>
+          <circle id="scoreArc" cx="50" cy="50" r="44" fill="none" stroke="#e8a33d" stroke-width="8"
+                  stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"
+                  transform="rotate(-90 50 50)"/>
+        </svg>
+        <div class="num" id="scoreNum">—</div>
+      </div>
+      <div class="score-copy">
+        <div class="summary-label">Match verdict</div>
+        <div class="summary-text" id="summaryText">—</div>
+      </div>
+    </div>
+
+    <div class="keyword-row">
+      <div class="kw-card">
+        <h3>Matched keywords</h3>
+        <div class="chips" id="matchedChips"></div>
+      </div>
+      <div class="kw-card">
+        <h3>Missing keywords</h3>
+        <div class="chips" id="missingChips"></div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <h3>Strengths</h3>
+      <ul id="strengthsList"></ul>
+    </div>
+
+    <div class="list-card">
+      <h3>Suggestions to improve match</h3>
+      <ul id="suggestionsList"></ul>
+    </div>
+  </div>
+
+  <footer>Powered by Groq (Llama 3.1) · Built by Jawad Ali Raza</footer>
+</div>
+
+<script>
+  const els = {
+    resume: document.getElementById('resumeBox'),
+    job: document.getElementById('jobBox'),
+    btn: document.getElementById('analyzeBtn'),
+    status: document.getElementById('status'),
+    results: document.getElementById('results'),
+    scoreArc: document.getElementById('scoreArc'),
+    scoreNum: document.getElementById('scoreNum'),
+    summaryText: document.getElementById('summaryText'),
+    matchedChips: document.getElementById('matchedChips'),
+    missingChips: document.getElementById('missingChips'),
+    strengthsList: document.getElementById('strengthsList'),
+    suggestionsList: document.getElementById('suggestionsList'),
+  };
+
+  const CIRC = 2 * Math.PI * 44; // ~276.5
+
+  function setStatus(msg, isError) {
+    els.status.textContent = msg;
+    els.status.classList.toggle('error', !!isError);
+  }
+
+  function renderChips(container, items, cls) {
+    container.innerHTML = '';
+    (items || []).forEach(t => {
+      const span = document.createElement('span');
+      span.className = `chip ${cls}`;
+      span.textContent = t;
+      container.appendChild(span);
+    });
+    if (!items || !items.length) {
+      container.innerHTML = '<span style="color:#6b7280;font-size:0.85rem;">None found</span>';
+    }
+  }
+
+  function renderList(container, items) {
+    container.innerHTML = '';
+    (items || []).forEach(t => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      container.appendChild(li);
+    });
+  }
+
+  async function analyze() {
+    const resume = els.resume.value.trim();
+    const job = els.job.value.trim();
+    if (!resume || !job) {
+      setStatus('Paste both your resume and a job description first.', true);
+      return;
+    }
+
+    els.btn.disabled = true;
+    setStatus('Analyzing… this takes a few seconds.');
+    els.results.classList.remove('visible');
+
+    try {
+      const res = await fetch('/.netlify/functions/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume, job }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.error || 'Something went wrong. Try again.', true);
+        els.btn.disabled = false;
+        return;
+      }
+
+      const score = Math.max(0, Math.min(100, Number(data.match_score) || 0));
+      const offset = CIRC - (CIRC * score) / 100;
+      els.scoreArc.style.strokeDashoffset = offset;
+      els.scoreNum.textContent = score;
+      els.summaryText.textContent = data.summary || '—';
+
+      renderChips(els.matchedChips, data.matched_keywords, 'matched');
+      renderChips(els.missingChips, data.missing_keywords, 'missing');
+      renderList(els.strengthsList, data.strengths);
+      renderList(els.suggestionsList, data.suggestions);
+
+      setStatus('');
+      els.results.classList.add('visible');
+    } catch (err) {
+      console.error(err);
+      setStatus('Network error — check your connection and try again.', true);
+    } finally {
+      els.btn.disabled = false;
+    }
+  }
+
+  els.btn.addEventListener('click', analyze);
+</script>
+</body>
+</html>
