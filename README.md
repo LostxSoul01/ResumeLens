@@ -27,7 +27,7 @@ netlify dev
 Set your `GROQ_API_KEY` in a `.env` file or via `netlify env:set GROQ_API_KEY your_key_here`.
 
 ## Live demo
-[Add your deployed URL here once live]
+https://jawad-resumelens.netlify.app/
 
 ## Author
 Jawad Ali Raza
