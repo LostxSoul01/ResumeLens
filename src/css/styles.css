@@ -1,0 +1,210 @@
+:root {
+  --ink: #1b2430;
+  --amber: #e8a33d;
+  --paper: #faf7f2;
+  --paper-alt: #f1ece3;
+  --slate: #6b7280;
+  --line: #dcd5c8;
+  --good: #2f9e6e;
+  --bad: #c0392b;
+  --card: #ffffff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 20px 90px;
+}
+.wrap { width: 100%; max-width: 760px; }
+
+header { text-align: center; margin-bottom: 40px; }
+header .mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid var(--ink);
+  margin-bottom: 14px;
+  position: relative;
+}
+header .mark::after {
+  content: ''; position: absolute; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--amber);
+}
+header h1 {
+  font-family: 'Newsreader', serif;
+  font-weight: 600; font-size: 2.3rem; margin: 0 0 8px; letter-spacing: -0.01em;
+}
+header p { color: var(--slate); margin: 0; font-size: 1rem; max-width: 460px; margin: 0 auto; }
+
+.panes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+@media (max-width: 640px) { .panes { grid-template-columns: 1fr; } }
+
+.pane label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--slate);
+  margin-bottom: 8px;
+}
+.pane textarea {
+  width: 100%;
+  height: 220px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ink);
+  resize: vertical;
+  outline: none;
+}
+.pane textarea:focus { border-color: var(--ink); }
+
+.actions { display: flex; justify-content: center; margin: 8px 0 36px; }
+button.analyze {
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: none;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+button.analyze:hover { transform: translateY(-1px); background: #2a3547; }
+button.analyze:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+.status { text-align: center; color: var(--slate); font-size: 0.9rem; min-height: 20px; margin-bottom: 10px; }
+.status.error { color: var(--bad); }
+
+.results { display: none; }
+.results.visible { display: block; }
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 26px;
+  margin-bottom: 22px;
+}
+.aperture {
+  flex: 0 0 auto;
+  width: 108px; height: 108px;
+  position: relative;
+}
+.aperture svg { width: 100%; height: 100%; }
+.aperture .num {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 1.5rem;
+}
+.score-copy .summary-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--slate); margin-bottom: 6px;
+}
+.score-copy .summary-text {
+  font-family: 'Newsreader', serif;
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
+.keyword-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+@media (max-width: 640px) { .keyword-row { grid-template-columns: 1fr; } }
+.kw-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px;
+}
+.kw-card h3 {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.07em; margin: 0 0 12px; color: var(--slate);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-size: 0.8rem; padding: 5px 10px; border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+}
+.chip.matched { background: rgba(47,158,110,0.12); color: var(--good); }
+.chip.missing { background: rgba(192,57,43,0.1); color: var(--bad); }
+
+.list-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px;
+  margin-bottom: 16px;
+}
+.list-card h3 {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.07em; margin: 0 0 12px; color: var(--slate);
+}
+.list-card ul { margin: 0; padding-left: 18px; }
+.list-card li { margin-bottom: 8px; line-height: 1.5; font-size: 0.92rem; }
+.list-card li:last-child { margin-bottom: 0; }
+
+footer { margin-top: 44px; text-align: center; color: var(--slate); font-size: 0.78rem; }
+
+/* ===== Phase 1: Section-by-section scoring ===== */
+.section-row { margin-bottom: 16px; }
+.section-row:last-child { margin-bottom: 0; }
+.section-row-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px;
+}
+.section-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem; font-weight: 600;
+}
+.section-score {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.9rem;
+}
+.section-bar-track {
+  height: 6px; border-radius: 999px; background: var(--paper-alt); overflow: hidden;
+}
+.section-bar-fill {
+  height: 100%; border-radius: 999px; transition: width 0.4s ease;
+}
+.section-rationale {
+  margin: 6px 0 0; font-size: 0.85rem; color: var(--slate); line-height: 1.4;
+}
+.empty-note { color: var(--slate); font-size: 0.85rem; }
+
+/* ===== Phase 2: Bullet rewrite suggestions ===== */
+.bullet-check-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; font-size: 0.88rem; cursor: pointer;
+}
+.bullet-check-row input { margin-top: 3px; }
+.rewrite-hint { color: var(--slate); font-size: 0.85rem; margin: 0 0 4px; }
+.rewrite-card {
+  border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-top: 14px;
+}
+.rewrite-original {
+  font-style: italic; color: var(--slate); font-size: 0.85rem; margin: 0 0 10px;
+}
+.rewrite-option {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: var(--paper-alt); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+}
+.rewrite-option p { margin: 0; font-size: 0.88rem; }
+.copy-btn {
+  flex-shrink: 0; border: none; background: var(--ink); color: var(--paper);
+  font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+}

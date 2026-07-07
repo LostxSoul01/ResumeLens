@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeLens — See Your Resume Through a Recruiter's Eyes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark"></div>
+    <h1>ResumeLens</h1>
+    <p>Paste your resume and a job description. See exactly how a recruiter's screening tools will read the match.</p>
+  </header>
+
+  <div class="panes">
+    <div class="pane">
+      <label for="resumeBox">Your resume</label>
+      <textarea id="resumeBox" placeholder="Paste your resume text here..."></textarea>
+    </div>
+    <div class="pane">
+      <label for="jobBox">Job description</label>
+      <textarea id="jobBox" placeholder="Paste the job description here..."></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="analyze" id="analyzeBtn">Analyze Match</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="results" id="results">
+    <div class="score-row">
+      <div class="aperture" id="aperture">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#dcd5c8" stroke-width="8"/>
+          <circle id="scoreArc" cx="50" cy="50" r="44" fill="none" stroke="#e8a33d" stroke-width="8"
+                  stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"
+                  transform="rotate(-90 50 50)"/>
+        </svg>
+        <div class="num" id="scoreNum">—</div>
+      </div>
+      <div class="score-copy">
+        <div class="summary-label">Match verdict</div>
+        <div class="summary-text" id="summaryText">—</div>
+      </div>
+    </div>
+
+    <div class="keyword-row">
+      <div class="kw-card">
+        <h3>Matched keywords</h3>
+        <div class="chips" id="matchedChips"></div>
+      </div>
+      <div class="kw-card">
+        <h3>Missing keywords</h3>
+        <div class="chips" id="missingChips"></div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <h3>Strengths</h3>
+      <ul id="strengthsList"></ul>
+    </div>
+
+    <div class="list-card">
+      <h3>Suggestions to improve match</h3>
+      <ul id="suggestionsList"></ul>
+    </div>
+
+    <div class="list-card">
+      <h3>Section-by-Section Match</h3>
+      <div id="sectionScores"></div>
+    </div>
+
+    <div class="list-card">
+      <h3>Bullet Rewrite Suggestions</h3>
+      <p class="rewrite-hint">Select the bullets you want improved, then click Rewrite.</p>
+      <div id="bulletChecklist"></div>
+      <div class="actions" style="margin-top:14px;">
+        <button class="analyze" id="rewriteBtn" type="button">Rewrite Selected</button>
+      </div>
+      <div class="status" id="rewriteStatus"></div>
+      <div id="rewriteResults"></div>
+    </div>
+  </div>
+
+  <footer>Powered by Groq (Llama 3.1) · Built by Jawad Ali Raza</footer>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/render.js"></script>
+<script src="js/bullets.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

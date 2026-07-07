@@ -1,6 +1,6 @@
 const { callGroq } = require('./_lib/groqClient');
-const { buildAnalyzePrompt } = require('./_lib/prompts');
-const { analyzeSchema, validate } = require('./_lib/schemas');
+const { buildSectionsPrompt } = require('./_lib/prompts');
+const { sectionsSchema, validate } = require('./_lib/schemas');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -13,10 +13,10 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'resume and job are required' }) };
     }
 
-    const prompt = buildAnalyzePrompt(resume, job);
+    const prompt = buildSectionsPrompt(resume, job);
     const result = await callGroq(prompt);
 
-    const { valid, errors } = validate(result, analyzeSchema);
+    const { valid, errors } = validate(result, sectionsSchema);
     if (!valid) {
       console.error('Schema validation failed:', errors);
       return { statusCode: 502, body: JSON.stringify({ error: 'Malformed response from AI model' }) };
@@ -25,6 +25,6 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify(result) };
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong analyzing your resume.' }) };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong scoring sections.' }) };
   }
 };
