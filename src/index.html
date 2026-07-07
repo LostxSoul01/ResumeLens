@@ -11,6 +11,7 @@
 </head>
 <body>
 <div class="wrap">
+
   <header>
     <div class="mark"></div>
     <h1>ResumeLens</h1>
@@ -27,14 +28,14 @@
       </div>
       <textarea id="resumeBox" placeholder="Paste your resume text here..."></textarea>
     </div>
-    
-  <div class="pane">
-  <label for="jobBox">Job description</label>
-  <div class="pdf-upload-row" style="visibility:hidden;">
-    <button type="button" class="secondary-btn" tabindex="-1">Upload PDF instead</button>
-  </div>
-  <textarea id="jobBox" placeholder="Paste the job description here..."></textarea>
-</div>
+    <div class="pane">
+      <label for="jobBox">Job description</label>
+      <div class="pdf-upload-row" style="visibility:hidden;">
+        <button type="button" class="secondary-btn" tabindex="-1">Upload PDF instead</button>
+      </div>
+      <textarea id="jobBox" placeholder="Paste the job description here..."></textarea>
+    </div>
+  </div><!-- /.panes -->
 
   <div class="list-card" id="updatedResumeCard" style="display:none;">
     <h3>Updated Resume Preview</h3>
@@ -109,10 +110,11 @@
       <div class="status" id="rewriteStatus"></div>
       <div id="rewriteResults"></div>
     </div>
-  </div>
+  </div><!-- /.results -->
 
   <footer>Powered by Groq (Llama 3.1) · Built by Jawad Ali Raza</footer>
-</div>
+
+</div><!-- /.wrap -->
 
 <script src="js/api.js"></script>
 <script src="js/render.js"></script>
