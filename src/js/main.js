@@ -18,13 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
     rewriteResults: document.getElementById('rewriteResults'),
     rewriteStatus: document.getElementById('rewriteStatus'),
     updatedResumeCard: document.getElementById('updatedResumeCard'),
+    updatedResumePreview: document.getElementById('updatedResumePreview'),
     updatedResumeBox: document.getElementById('updatedResumeBox'),
+    toggleEditBtn: document.getElementById('toggleEditBtn'),
     checkUpdatedBtn: document.getElementById('checkUpdatedBtn'),
     updatedStatus: document.getElementById('updatedStatus'),
   };
 
   let extractedBullets = [];
   let updatedResumeText = null; // null until the first "Use" click
+  let isEditingRaw = false;
 
   function setStatus(msg, isError) {
     els.status.textContent = msg;
@@ -123,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // "Use" — updates the separate preview only. No auto re-analysis.
+  // "Use" — updates the styled preview and highlights the changed line.
+  // No auto re-analysis; user controls when to spend an API call.
   els.rewriteResults.addEventListener('click', (e) => {
     const btn = e.target.closest('.use-btn');
     if (!btn) return;
@@ -131,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const { _original, _rewrite } = btn;
     if (!_original || !_rewrite) return;
 
-    // Seed the preview from the currently-analyzed resume the first time.
     if (updatedResumeText === null) {
       updatedResumeText = stripMarkdown(els.resume.value.trim());
     }
@@ -146,11 +149,40 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.classList.add('used');
     btn.disabled = true;
 
-    window.render.showUpdatedResumeCard(els.updatedResumeCard, updatedResumeText);
+    els.updatedResumeBox.value = updatedResumeText; // keep raw box in sync for later edit-toggle
+    window.render.renderUpdatedResumePreview(
+      els.updatedResumeCard,
+      els.updatedResumePreview,
+      updatedResumeText,
+      _rewrite
+    );
   });
 
-  // Explicit re-check button — this is the only thing that triggers
-  // a fresh API call for the updated resume. User controls the timing.
+  // Toggle between the styled read-only preview and a raw editable textarea.
+  els.toggleEditBtn.addEventListener('click', () => {
+    isEditingRaw = !isEditingRaw;
+
+    if (isEditingRaw) {
+      els.updatedResumeBox.value = updatedResumeText || '';
+      els.updatedResumeBox.style.display = 'block';
+      els.updatedResumePreview.style.display = 'none';
+      els.toggleEditBtn.textContent = 'Preview';
+    } else {
+      updatedResumeText = els.updatedResumeBox.value; // pull in any manual edits
+      window.render.renderUpdatedResumePreview(
+        els.updatedResumeCard,
+        els.updatedResumePreview,
+        updatedResumeText,
+        null
+      );
+      els.updatedResumeBox.style.display = 'none';
+      els.updatedResumePreview.style.display = 'block';
+      els.toggleEditBtn.textContent = 'Edit Manually';
+    }
+  });
+
+  // Explicit re-check button — the only thing that triggers a fresh
+  // API call for the updated resume. User controls the timing.
   els.checkUpdatedBtn.addEventListener('click', async () => {
     const job = els.job.value.trim();
     if (!job) {
@@ -159,8 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Let manual edits in the preview box count too.
-    updatedResumeText = els.updatedResumeBox.value.trim();
+    if (isEditingRaw) {
+      updatedResumeText = els.updatedResumeBox.value.trim();
+    }
 
     els.checkUpdatedBtn.disabled = true;
     const ok = await runAnalysisFor(updatedResumeText, job, {

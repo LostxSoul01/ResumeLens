@@ -129,6 +129,35 @@ button.analyze:disabled { opacity: 0.5; cursor: default; transform: none; }
   line-height: 1.4;
 }
 
+.resume-preview {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.resume-preview .changed-line {
+  background: rgba(47,158,110,0.14);
+  border-left: 3px solid var(--good);
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.resume-edit-box {
+  width: 100%; height: 220px; padding: 14px; border-radius: 10px;
+  border: 1px solid var(--line); font-family: 'Inter', sans-serif; font-size: 0.88rem;
+}
+.actions { display: flex; gap: 10px; justify-content: center; }
+button.secondary-btn {
+  background: transparent; color: var(--ink); border: 1px solid var(--line);
+}
+button.secondary-btn:hover { background: var(--paper-alt); }
+
 .keyword-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
 @media (max-width: 640px) { .keyword-row { grid-template-columns: 1fr; } }
 .kw-card {

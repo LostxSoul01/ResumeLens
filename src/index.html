@@ -30,12 +30,16 @@
   <div class="list-card" id="updatedResumeCard" style="display:none;">
   <h3>Updated Resume Preview</h3>
   <p class="rewrite-hint">This reflects the rewrites you've accepted. Your original resume above is untouched.</p>
-  <textarea id="updatedResumeBox" style="width:100%; height:220px; padding:14px; border-radius:10px; border:1px solid var(--line); font-family:'Inter',sans-serif; font-size:0.88rem;"></textarea>
-  <div class="actions" style="margin-top:14px;">
+
+  <div class="resume-preview" id="updatedResumePreview"></div>
+  <textarea id="updatedResumeBox" class="resume-edit-box" style="display:none;"></textarea>
+
+  <div class="actions" style="margin-top:14px; gap:10px;">
+    <button class="analyze secondary-btn" id="toggleEditBtn" type="button">Edit Manually</button>
     <button class="analyze" id="checkUpdatedBtn" type="button">Check Updated Resume</button>
   </div>
   <div class="status" id="updatedStatus"></div>
-</div>
+  </div>
 
   <div class="actions">
     <button class="analyze" id="analyzeBtn">Analyze Match</button>

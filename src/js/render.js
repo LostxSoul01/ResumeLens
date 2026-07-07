@@ -131,9 +131,16 @@ function renderRewriteResults(container, data) {
 
 // Shows the "Updated Resume Preview" card and populates it with the
 // latest text after a rewrite has been accepted via a "Use" click.
-function showUpdatedResumeCard(container, text) {
+function renderUpdatedResumePreview(container, previewEl, fullText, changedLine) {
   container.style.display = 'block';
-  document.getElementById('updatedResumeBox').value = text;
+
+  const lines = fullText.split('\n');
+  previewEl.innerHTML = lines.map(line => {
+    if (changedLine && line.trim() === changedLine.trim()) {
+      return `<span class="changed-line">${line}</span>`;
+    }
+    return line;
+  }).join('\n');
 }
 
 window.render = {
@@ -141,5 +148,5 @@ window.render = {
   renderSectionScores,
   renderBulletChecklist,
   renderRewriteResults,
-  showUpdatedResumeCard,
+  renderUpdatedResumePreview,
 };

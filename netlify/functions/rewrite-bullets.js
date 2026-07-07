@@ -25,6 +25,15 @@ exports.handler = async (event) => {
       return { statusCode: 502, body: JSON.stringify({ error: 'Malformed response from AI model' }) };
     }
 
+    // Guard against the model hallucinating extra "rewrites" for things
+    // that were never sent (e.g. missing keywords instead of actual bullets).
+    // Only keep entries whose "original" text closely matches an input bullet.
+    const normalize = s => (s || '').toLowerCase().trim();
+    const inputSet = bullets.map(normalize);
+    result.rewrites = (result.rewrites || []).filter(r =>
+      inputSet.some(b => b === normalize(r.original))
+    );
+
     return { statusCode: 200, body: JSON.stringify(result) };
   } catch (err) {
     console.error(err);
