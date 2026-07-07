@@ -26,14 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
     els.status.classList.toggle('error', !!isError);
   }
 
-  // NEW — strips literal markdown bold (**text**) from pasted resume text
+  // Strips literal markdown bold (**text**) from pasted resume text
   // so it never leaks into the UI, the LLM prompts, or the bullet checklist.
   function stripMarkdown(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '$1');
   }
 
   async function runAnalysis() {
-    // NEW — clean the resume text right at the source, before anything uses it
     const resume = stripMarkdown(els.resume.value.trim());
     const job = els.job.value.trim();
     if (!resume || !job) {
@@ -109,4 +108,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   els.btn.addEventListener('click', runAnalysis);
   els.rewriteBtn.addEventListener('click', runBulletRewrite);
+
+  // Handles clicking "Use" on a rewrite option: replaces the bullet
+  // in the resume textarea, then re-runs the full analysis automatically.
+  // Registered ONCE here (not inside runAnalysis) using event delegation,
+  // since rewrite cards are re-created dynamically each time.
+  els.rewriteResults.addEventListener('click', (e) => {
+    const btn = e.target.closest('.use-btn');
+    if (!btn) return;
+
+    const { _original, _rewrite } = btn;
+    if (!_original || !_rewrite) return;
+
+    const current = els.resume.value;
+    if (!current.includes(_original)) {
+      btn.textContent = 'Not found';
+      return;
+    }
+
+    els.resume.value = current.replace(_original, _rewrite);
+    btn.textContent = 'Used ✓';
+    btn.classList.add('used');
+    btn.disabled = true;
+
+    // Re-run the full analysis so score/keywords/sections reflect the change live
+    runAnalysis();
+  });
 });

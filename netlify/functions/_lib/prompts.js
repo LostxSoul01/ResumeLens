@@ -1,12 +1,28 @@
 // All prompt templates live here so functions stay clean.
 
+const CRITICAL_SCORING_GUIDANCE = `
+You are a skeptical, experienced technical recruiter who has rejected hundreds of resumes. Real ATS systems and human recruiters are harsh — most resumes score 40-65 on a genuine match. Do NOT default to generous scores.
+
+Calibrate strictly using these bands:
+- 90-100: Reserved for candidates who explicitly meet nearly every required qualification with clear, specific evidence. Extremely rare.
+- 75-89: Strong match — meets most core requirements with solid evidence, but has at least one real gap (missing tool, no quantified impact, or a "nice to have" absent).
+- 55-74: Moderate match — meets some requirements but has clear gaps in required skills, experience depth, or quantifiable results.
+- 30-54: Weak match — significant missing requirements or the resume relies on vague/generic claims instead of specifics.
+- Below 30: Poor match — most core requirements absent.
+
+Penalize for: generic action-verb bullets with no metrics, claimed skills not backed by any project/experience evidence, missing "required" (not just "nice to have") qualifications, and academic-only experience when the role implies production/professional expectations.
+Do not give credit for skills merely listed without any supporting bullet or project evidence in the resume.
+`;
+
 function buildAnalyzePrompt(resume, job) {
-  return `You are an expert technical recruiter and ATS system. Compare the resume against the job description below.
+  return `${CRITICAL_SCORING_GUIDANCE}
+
+Compare the resume against the job description below.
 
 Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
 {
   "match_score": <number 0-100>,
-  "summary": "<one sentence verdict>",
+  "summary": "<one honest, critical sentence verdict>",
   "matched_keywords": ["..."],
   "missing_keywords": ["..."],
   "strengths": ["..."],
@@ -21,8 +37,10 @@ ${job}`;
 }
 
 function buildSectionsPrompt(resume, job) {
-  return `You are an expert technical recruiter. First, classify the resume text into these sections if present: Summary, Experience, Skills, Education, Projects.
-Then score each section 0-100 on how well it aligns with the job description, with a short one-sentence rationale for each.
+  return `${CRITICAL_SCORING_GUIDANCE}
+
+Classify the resume text into these sections if present: Summary, Experience, Skills, Education, Projects.
+Then score each section using the bands above, with a short, honest, one-sentence rationale that names the specific gap if the score isn't high.
 
 Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
 {

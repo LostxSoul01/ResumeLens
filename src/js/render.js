@@ -95,19 +95,39 @@ function renderRewriteResults(container, data) {
   rewrites.forEach(item => {
     const card = document.createElement('div');
     card.className = 'rewrite-card';
-    card.innerHTML = `
-      <p class="rewrite-original">"${item.original}"</p>
-      <div class="rewrite-options">
-        ${item.options.map(opt => `
-          <div class="rewrite-option">
-            <p>${opt}</p>
-            <button class="copy-btn" type="button">Copy</button>
-          </div>
-        `).join('')}
-      </div>
-    `;
+
+    const originalP = document.createElement('p');
+    originalP.className = 'rewrite-original';
+    originalP.textContent = `"${item.original}"`;
+    card.appendChild(originalP);
+
+    const optionsWrap = document.createElement('div');
+    optionsWrap.className = 'rewrite-options';
+
+    item.options.forEach(opt => {
+      const optionRow = document.createElement('div');
+      optionRow.className = 'rewrite-option';
+
+      const p = document.createElement('p');
+      p.textContent = opt;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'use-btn';
+      btn.textContent = 'Use';
+      // Store as JS properties, not HTML attributes — avoids escaping issues with quotes/special chars
+      btn._original = item.original;
+      btn._rewrite = opt;
+
+      optionRow.appendChild(p);
+      optionRow.appendChild(btn);
+      optionsWrap.appendChild(optionRow);
+    });
+
+    card.appendChild(optionsWrap);
     container.appendChild(card);
   });
+
 
   // Wire up copy buttons after render
   container.querySelectorAll('.rewrite-option').forEach(optionEl => {

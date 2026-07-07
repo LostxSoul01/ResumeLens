@@ -204,7 +204,8 @@ footer { margin-top: 44px; text-align: center; color: var(--slate); font-size: 0
   background: var(--paper-alt); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
 }
 .rewrite-option p { margin: 0; font-size: 0.88rem; }
-.copy-btn {
+.use-btn {
   flex-shrink: 0; border: none; background: var(--ink); color: var(--paper);
   font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; cursor: pointer;
 }
+.use-btn.used { background: var(--good); }
