@@ -17,19 +17,69 @@ document.addEventListener('DOMContentLoaded', () => {
     rewriteBtn: document.getElementById('rewriteBtn'),
     rewriteResults: document.getElementById('rewriteResults'),
     rewriteStatus: document.getElementById('rewriteStatus'),
+    updatedResumeCard: document.getElementById('updatedResumeCard'),
+    updatedResumeBox: document.getElementById('updatedResumeBox'),
+    checkUpdatedBtn: document.getElementById('checkUpdatedBtn'),
+    updatedStatus: document.getElementById('updatedStatus'),
   };
 
   let extractedBullets = [];
+  let updatedResumeText = null; // null until the first "Use" click
 
   function setStatus(msg, isError) {
     els.status.textContent = msg;
     els.status.classList.toggle('error', !!isError);
   }
 
-  // Strips literal markdown bold (**text**) from pasted resume text
-  // so it never leaks into the UI, the LLM prompts, or the bullet checklist.
   function stripMarkdown(text) {
     return text.replace(/\*\*(.*?)\*\*/g, '$1');
+  }
+
+  // Shared core: runs analysis + section scoring + bullet extraction
+  // against whichever resume text is passed in (original or updated).
+  async function runAnalysisFor(resumeText, job, { statusEl, resultsEl } = {}) {
+    const status = statusEl || els.status;
+    const showResults = resultsEl || els.results;
+
+    status.textContent = 'Analyzing… this takes a few seconds.';
+    status.classList.remove('error');
+    showResults.classList.remove('visible');
+
+    try {
+      const [mainResult, sectionsResult] = await Promise.allSettled([
+        window.api.analyze(resumeText, job),
+        window.api.analyzeSections(resumeText, job),
+      ]);
+
+      if (mainResult.status === 'fulfilled') {
+        window.render.renderMainScore(els, mainResult.value);
+      } else {
+        status.textContent = mainResult.reason.message;
+        status.classList.add('error');
+      }
+
+      if (sectionsResult.status === 'fulfilled') {
+        window.render.renderSectionScores(els.sectionScores, sectionsResult.value);
+      } else {
+        els.sectionScores.innerHTML = '<span class="empty-note">Section scoring unavailable right now</span>';
+        console.error(sectionsResult.reason);
+      }
+
+      if (mainResult.status === 'fulfilled') {
+        status.textContent = '';
+        showResults.classList.add('visible');
+
+        extractedBullets = window.bullets.extractBullets(resumeText);
+        window.render.renderBulletChecklist(els.bulletChecklist, extractedBullets);
+      }
+
+      return mainResult.status === 'fulfilled';
+    } catch (err) {
+      console.error(err);
+      status.textContent = err.message || 'Something went wrong analyzing your resume.';
+      status.classList.add('error');
+      return false;
+    }
   }
 
   async function runAnalysis() {
@@ -41,41 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     els.btn.disabled = true;
-    setStatus('Analyzing… this takes a few seconds.');
-    els.results.classList.remove('visible');
-
     try {
-      // Run both calls in parallel — independent requests, no need to wait on each other.
-      const [mainResult, sectionsResult] = await Promise.allSettled([
-        window.api.analyze(resume, job),
-        window.api.analyzeSections(resume, job),
-      ]);
-
-      if (mainResult.status === 'fulfilled') {
-        window.render.renderMainScore(els, mainResult.value);
-      } else {
-        setStatus(mainResult.reason.message, true);
-      }
-
-      if (sectionsResult.status === 'fulfilled') {
-        window.render.renderSectionScores(els.sectionScores, sectionsResult.value);
-      } else {
-        // Section scoring is a bonus feature — don't block the whole UI if it fails.
-        els.sectionScores.innerHTML = '<span class="empty-note">Section scoring unavailable right now</span>';
-        console.error(sectionsResult.reason);
-      }
-
-      if (mainResult.status === 'fulfilled') {
-        setStatus('');
-        els.results.classList.add('visible');
-
-        // extract bullets from the (already markdown-stripped) resume and render the checklist
-        extractedBullets = window.bullets.extractBullets(resume);
-        window.render.renderBulletChecklist(els.bulletChecklist, extractedBullets);
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus('Network error — check your connection and try again.', true);
+      await runAnalysisFor(resume, job);
     } finally {
       els.btn.disabled = false;
     }
@@ -106,13 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  els.btn.addEventListener('click', runAnalysis);
-  els.rewriteBtn.addEventListener('click', runBulletRewrite);
-
-  // Handles clicking "Use" on a rewrite option: replaces the bullet
-  // in the resume textarea, then re-runs the full analysis automatically.
-  // Registered ONCE here (not inside runAnalysis) using event delegation,
-  // since rewrite cards are re-created dynamically each time.
+  // "Use" — updates the separate preview only. No auto re-analysis.
   els.rewriteResults.addEventListener('click', (e) => {
     const btn = e.target.closest('.use-btn');
     if (!btn) return;
@@ -120,18 +131,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const { _original, _rewrite } = btn;
     if (!_original || !_rewrite) return;
 
-    const current = els.resume.value;
-    if (!current.includes(_original)) {
+    // Seed the preview from the currently-analyzed resume the first time.
+    if (updatedResumeText === null) {
+      updatedResumeText = stripMarkdown(els.resume.value.trim());
+    }
+
+    if (!updatedResumeText.includes(_original)) {
       btn.textContent = 'Not found';
       return;
     }
 
-    els.resume.value = current.replace(_original, _rewrite);
+    updatedResumeText = updatedResumeText.replace(_original, _rewrite);
     btn.textContent = 'Used ✓';
     btn.classList.add('used');
     btn.disabled = true;
 
-    // Re-run the full analysis so score/keywords/sections reflect the change live
-    runAnalysis();
+    window.render.showUpdatedResumeCard(els.updatedResumeCard, updatedResumeText);
   });
+
+  // Explicit re-check button — this is the only thing that triggers
+  // a fresh API call for the updated resume. User controls the timing.
+  els.checkUpdatedBtn.addEventListener('click', async () => {
+    const job = els.job.value.trim();
+    if (!job) {
+      els.updatedStatus.textContent = 'Job description is required to check the score.';
+      els.updatedStatus.classList.add('error');
+      return;
+    }
+
+    // Let manual edits in the preview box count too.
+    updatedResumeText = els.updatedResumeBox.value.trim();
+
+    els.checkUpdatedBtn.disabled = true;
+    const ok = await runAnalysisFor(updatedResumeText, job, {
+      statusEl: els.updatedStatus,
+      resultsEl: els.results,
+    });
+    els.checkUpdatedBtn.disabled = false;
+
+    if (ok) {
+      els.updatedStatus.textContent = 'Updated resume checked — results above reflect this version.';
+      els.updatedStatus.classList.remove('error');
+    }
+  });
+
+  els.btn.addEventListener('click', runAnalysis);
+  els.rewriteBtn.addEventListener('click', runBulletRewrite);
 });

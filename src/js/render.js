@@ -127,18 +127,13 @@ function renderRewriteResults(container, data) {
     card.appendChild(optionsWrap);
     container.appendChild(card);
   });
+}
 
-
-  // Wire up copy buttons after render
-  container.querySelectorAll('.rewrite-option').forEach(optionEl => {
-    const btn = optionEl.querySelector('.copy-btn');
-    const text = optionEl.querySelector('p').textContent;
-    btn.addEventListener('click', () => {
-      navigator.clipboard.writeText(text);
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
-    });
-  });
+// Shows the "Updated Resume Preview" card and populates it with the
+// latest text after a rewrite has been accepted via a "Use" click.
+function showUpdatedResumeCard(container, text) {
+  container.style.display = 'block';
+  document.getElementById('updatedResumeBox').value = text;
 }
 
 window.render = {
@@ -146,4 +141,5 @@ window.render = {
   renderSectionScores,
   renderBulletChecklist,
   renderRewriteResults,
+  showUpdatedResumeCard,
 };
