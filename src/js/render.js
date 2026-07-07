@@ -1,6 +1,4 @@
-// All DOM rendering lives here — main.js just calls these with data.
-
-const CIRC = 2 * Math.PI * 44; // matches the SVG radius in index.html
+const CIRC = 2 * Math.PI * 44;
 
 function renderMainScore(els, data) {
   const score = Math.max(0, Math.min(100, Number(data.match_score) || 0));
@@ -115,7 +113,6 @@ function renderRewriteResults(container, data) {
       btn.type = 'button';
       btn.className = 'use-btn';
       btn.textContent = 'Use';
-      // Store as JS properties, not HTML attributes — avoids escaping issues with quotes/special chars
       btn._original = item.original;
       btn._rewrite = opt;
 
@@ -129,8 +126,6 @@ function renderRewriteResults(container, data) {
   });
 }
 
-// Shows the "Updated Resume Preview" card and populates it with the
-// latest text after a rewrite has been accepted via a "Use" click.
 function renderUpdatedResumePreview(container, previewEl, fullText, changedLine) {
   container.style.display = 'block';
 

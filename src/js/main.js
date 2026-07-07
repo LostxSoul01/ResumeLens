@@ -23,10 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleEditBtn: document.getElementById('toggleEditBtn'),
     checkUpdatedBtn: document.getElementById('checkUpdatedBtn'),
     updatedStatus: document.getElementById('updatedStatus'),
+    uploadPdfBtn: document.getElementById('uploadPdfBtn'),
+    resumePdfInput: document.getElementById('resumePdfInput'),
+    pdfUploadStatus: document.getElementById('pdfUploadStatus'),
   };
 
   let extractedBullets = [];
-  let updatedResumeText = null; // null until the first "Use" click
+  let updatedResumeText = null;
   let isEditingRaw = false;
 
   function setStatus(msg, isError) {
@@ -38,8 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return text.replace(/\*\*(.*?)\*\*/g, '$1');
   }
 
-  // Shared core: runs analysis + section scoring + bullet extraction
-  // against whichever resume text is passed in (original or updated).
   async function runAnalysisFor(resumeText, job, { statusEl, resultsEl } = {}) {
     const status = statusEl || els.status;
     const showResults = resultsEl || els.results;
@@ -126,8 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // "Use" — updates the styled preview and highlights the changed line.
-  // No auto re-analysis; user controls when to spend an API call.
   els.rewriteResults.addEventListener('click', (e) => {
     const btn = e.target.closest('.use-btn');
     if (!btn) return;
@@ -149,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.classList.add('used');
     btn.disabled = true;
 
-    els.updatedResumeBox.value = updatedResumeText; // keep raw box in sync for later edit-toggle
+    els.updatedResumeBox.value = updatedResumeText;
     window.render.renderUpdatedResumePreview(
       els.updatedResumeCard,
       els.updatedResumePreview,
@@ -158,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // Toggle between the styled read-only preview and a raw editable textarea.
   els.toggleEditBtn.addEventListener('click', () => {
     isEditingRaw = !isEditingRaw;
 
@@ -168,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
       els.updatedResumePreview.style.display = 'none';
       els.toggleEditBtn.textContent = 'Preview';
     } else {
-      updatedResumeText = els.updatedResumeBox.value; // pull in any manual edits
+      updatedResumeText = els.updatedResumeBox.value;
       window.render.renderUpdatedResumePreview(
         els.updatedResumeCard,
         els.updatedResumePreview,
@@ -181,8 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Explicit re-check button — the only thing that triggers a fresh
-  // API call for the updated resume. User controls the timing.
   els.checkUpdatedBtn.addEventListener('click', async () => {
     const job = els.job.value.trim();
     if (!job) {
@@ -205,6 +201,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ok) {
       els.updatedStatus.textContent = 'Updated resume checked — results above reflect this version.';
       els.updatedStatus.classList.remove('error');
+    }
+  });
+
+  els.uploadPdfBtn.addEventListener('click', () => {
+    els.resumePdfInput.click();
+  });
+
+  els.resumePdfInput.addEventListener('change', async () => {
+    const file = els.resumePdfInput.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      els.pdfUploadStatus.textContent = 'Please select a PDF file.';
+      els.pdfUploadStatus.classList.add('error');
+      return;
+    }
+
+    els.pdfUploadStatus.textContent = 'Extracting text…';
+    els.pdfUploadStatus.classList.remove('error', 'success');
+    els.uploadPdfBtn.disabled = true;
+
+    try {
+      const text = await window.pdfExtract.extractTextFromPdf(file);
+      if (!text.trim()) {
+        els.pdfUploadStatus.textContent = 'No selectable text found — this PDF may be a scanned image.';
+        els.pdfUploadStatus.classList.add('error');
+        return;
+      }
+      els.resume.value = text;
+      els.pdfUploadStatus.textContent = `Extracted text from "${file.name}"`;
+      els.pdfUploadStatus.classList.add('success');
+    } catch (err) {
+      console.error(err);
+      els.pdfUploadStatus.textContent = 'Failed to read PDF. Try pasting the text manually.';
+      els.pdfUploadStatus.classList.add('error');
+    } finally {
+      els.uploadPdfBtn.disabled = false;
+      els.resumePdfInput.value = '';
     }
   });
 

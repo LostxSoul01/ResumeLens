@@ -1,5 +1,3 @@
-// Defines expected JSON shapes returned by the LLM, plus a light validator.
-
 const analyzeSchema = {
   match_score: 'number',
   summary: 'string',
@@ -10,7 +8,11 @@ const analyzeSchema = {
 };
 
 const sectionsSchema = {
-  sections: 'array', // [{ name, score, rationale }]
+  sections: 'array',
+};
+
+const rewriteSchema = {
+  rewrites: 'array',
 };
 
 function validate(obj, schema) {
@@ -27,9 +29,5 @@ function validate(obj, schema) {
   }
   return { valid: errors.length === 0, errors };
 }
-
-const rewriteSchema = {
-  rewrites: 'array', // [{ original, options: [rewrite1, rewrite2] }]
-};
 
 module.exports = { analyzeSchema, sectionsSchema, rewriteSchema, validate };

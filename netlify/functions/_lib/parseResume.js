@@ -1,6 +1,3 @@
-// Lightweight heuristic splitter — used for future features that need to
-// isolate bullets by section without another LLM round-trip.
-
 const SECTION_HEADERS = ['summary', 'experience', 'skills', 'education', 'projects'];
 
 function splitIntoSections(resumeText) {

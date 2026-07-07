@@ -1,5 +1,3 @@
-// Thin fetch wrappers — one function per backend endpoint.
-
 async function analyze(resume, job) {
   const res = await fetch('/.netlify/functions/analyze', {
     method: 'POST',

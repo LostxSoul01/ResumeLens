@@ -21,7 +21,6 @@ async function callGroq(prompt, { temperature = 0.3, retries = 1 } = {}) {
   });
 
   if (res.status === 429 && retries > 0) {
-    // Rate limited — wait briefly and retry once.
     await new Promise(r => setTimeout(r, 1500));
     return callGroq(prompt, { temperature, retries: retries - 1 });
   }

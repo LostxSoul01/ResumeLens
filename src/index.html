@@ -6,6 +6,7 @@
 <title>ResumeLens — See Your Resume Through a Recruiter's Eyes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -19,6 +20,11 @@
   <div class="panes">
     <div class="pane">
       <label for="resumeBox">Your resume</label>
+      <div class="pdf-upload-row">
+        <input type="file" id="resumePdfInput" accept="application/pdf" style="display:none;">
+        <button type="button" class="secondary-btn" id="uploadPdfBtn">Upload PDF instead</button>
+        <span class="pdf-upload-status" id="pdfUploadStatus"></span>
+      </div>
       <textarea id="resumeBox" placeholder="Paste your resume text here..."></textarea>
     </div>
     <div class="pane">
@@ -28,17 +34,17 @@
   </div>
 
   <div class="list-card" id="updatedResumeCard" style="display:none;">
-  <h3>Updated Resume Preview</h3>
-  <p class="rewrite-hint">This reflects the rewrites you've accepted. Your original resume above is untouched.</p>
+    <h3>Updated Resume Preview</h3>
+    <p class="rewrite-hint">This reflects the rewrites you've accepted. Your original resume above is untouched.</p>
 
-  <div class="resume-preview" id="updatedResumePreview"></div>
-  <textarea id="updatedResumeBox" class="resume-edit-box" style="display:none;"></textarea>
+    <div class="resume-preview" id="updatedResumePreview"></div>
+    <textarea id="updatedResumeBox" class="resume-edit-box" style="display:none;"></textarea>
 
-  <div class="actions" style="margin-top:14px; gap:10px;">
-    <button class="analyze secondary-btn" id="toggleEditBtn" type="button">Edit Manually</button>
-    <button class="analyze" id="checkUpdatedBtn" type="button">Check Updated Resume</button>
-  </div>
-  <div class="status" id="updatedStatus"></div>
+    <div class="actions" style="margin-top:14px;">
+      <button class="analyze secondary-btn" id="toggleEditBtn" type="button">Edit Manually</button>
+      <button class="analyze" id="checkUpdatedBtn" type="button">Check Updated Resume</button>
+    </div>
+    <div class="status" id="updatedStatus"></div>
   </div>
 
   <div class="actions">
@@ -108,6 +114,7 @@
 <script src="js/api.js"></script>
 <script src="js/render.js"></script>
 <script src="js/bullets.js"></script>
+<script src="js/pdfExtract.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

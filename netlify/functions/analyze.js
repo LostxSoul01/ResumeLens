@@ -25,6 +25,6 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify(result) };
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong analyzing your resume.' }) };
+    return { statusCode: 500, body: JSON.stringify({ error: err.message || 'Something went wrong analyzing your resume.' }) };
   }
 };

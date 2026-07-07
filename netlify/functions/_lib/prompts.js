@@ -1,5 +1,3 @@
-// All prompt templates live here so functions stay clean.
-
 const CRITICAL_SCORING_GUIDANCE = `
 You are a skeptical, experienced technical recruiter who has rejected hundreds of resumes. Real ATS systems and human recruiters are harsh — most resumes score 40-65 on a genuine match. Do NOT default to generous scores.
 
@@ -62,10 +60,12 @@ ${job}`;
 function buildRewritePrompt(bullets, job) {
   return `You are a resume writing expert. For each bullet below, write 2 improved rewrites that use stronger action verbs, add quantifiable impact where plausible, and align with the job description's language — without inventing false facts or numbers not implied by the original.
 
+IMPORTANT: Only produce ONE entry per bullet listed below. Do not create separate entries for the same bullet, and do not rewrite anything that is not explicitly listed in BULLETS.
+
 Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
 {
   "rewrites": [
-    { "original": "<original bullet>", "options": ["<rewrite 1>", "<rewrite 2>"] }
+    { "original": "<original bullet, copied exactly>", "options": ["<rewrite 1>", "<rewrite 2>"] }
   ]
 }
 
